@@ -9,6 +9,10 @@ class HabitRPHPG {
 	private $api_key = '';
 	private $base_url = 'https://habitrpg.com/';
 	private $json_return_format_is_array = true;
+	private $options = array(
+				'enable_cache'	=> true,   // FOR DEVELOPMENT ONLY.
+				'cache_path'	=> '/tmp/' // Use this for faster testing
+			);
 
 	///Constructor
 	function __construct($user_id, $api_key) {
@@ -24,7 +28,14 @@ class HabitRPHPG {
 
 		$url_parts = parse_url($url);
 		$ch = curl_init($url_parts['host']);
-		
+
+		// If cacheing is on and we have a cached copy of the request, use that.
+		if($this->options['enable_cache']) {
+			$cache_file = $this->options['cache_path'] . md5($url) . ".json";
+			if(file_exists($cache_file)) {
+				return json_decode(file_get_contents($cache_file), $this->json_return_format_is_array);
+			}
+		}
 		curl_setopt($ch, CURLOPT_URL, $url) or die("Invalid cURL Handle Resouce");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); //Just return the data - not print the whole thing.
 		// curl_setopt($ch, CURLOPT_HEADER, true); //We need the headers
@@ -48,6 +59,11 @@ class HabitRPHPG {
 		$response = curl_exec($ch);
 		curl_close($ch);
 
+		// Save cached version of the file
+		if($this->options['enable_cache']) {
+			file_put_contents($cache_file, $response);
+		}
+
 		return json_decode($response, $this->json_return_format_is_array);
 	}
 
@@ -56,7 +72,7 @@ class HabitRPHPG {
 	}
 
 	function task($task_id = 0) {
-		if($task == 0) return $this->_request("get", "user/tasks");
+		if($task_id == 0) return $this->_request("get", "user/tasks");
 		else return $this->_request("get", "user/tasks/$task_id");
 	}
 
