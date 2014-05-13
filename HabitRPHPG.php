@@ -10,7 +10,7 @@ class HabitRPHPG {
 	private $base_url = 'https://habitrpg.com/';
 	private $json_return_format_is_array = true;
 	private $options = array(
-				'enable_cache'	=> true,   // FOR DEVELOPMENT ONLY.
+				'enable_cache'	=> false,   // FOR DEVELOPMENT ONLY.
 				'cache_path'	=> '/tmp/' // Use this for faster testing
 			);
 
@@ -23,7 +23,7 @@ class HabitRPHPG {
 	private function _request($method, $operation, $data = '') {
 		if(!function_exists("curl_init")) die("HabitRPG Library requires curl to function.");
 
-		$url = $this->base_url . 'api/v1/' . $operation;
+		$url = $this->base_url . 'api/v2/' . $operation;
 		if($method == 'get') $url .= '/' . $data;
 
 		$url_parts = parse_url($url);
@@ -90,8 +90,12 @@ class HabitRPHPG {
 		return $this->_request("put", "user/task/$task_id", $data);	
 	}
 
+	/**
+	 * Arguments:	$task_id - The ID of the task that should be marked done on not done.
+	 *				$direction - should be 'up' or 'down'
+	 */
 	function doTask($task_id, $direction) {
-		return $this->_request("post", "users/{$this->user_id}/tasks/$task_id/$direction", array('apiToken'=>$this->api_key));
+		return $this->_request("post", "user/tasks/$task_id/$direction", array('apiToken'=>$this->api_key));
 	}
 
 

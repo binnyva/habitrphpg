@@ -18,7 +18,24 @@ if(isset($argv[1])) {
 		case 'todo':
 		case 'reward':
 		case 'task':
-			task($argv[1]);
+			$search = '';
+			if(!empty($argv[2])) $search = $argv[2];
+
+			task($argv[1], $search);
+			break;
+
+		case '+':
+		case '-':
+		case 'do':
+		case 'done':
+		case 'did':
+		case 'up':
+		case 'down':
+			if(empty($argv[2])) die("Usage: habitrpg $argv[1] <task string>");
+			$direction = 'up';
+			if($argv[1] == '-' or $argv[1] == 'down') $direction = 'down';
+
+			doTask($direction, $argv[2]);
 			break;
 
 		default:
@@ -39,26 +56,60 @@ function status() {
 	print $data['profile']['name'] . " (Level $stats[lvl])\n";
 	print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
 	print "Experiance:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
-	dump($stats);
-
-	//print "Gems: "
+	list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
+	print "Gold: $gold | Silver: $silver\n";
 }
 
-function task($type = '') {
+function task($type = '', $search = '') {
 	global $api;
 	if($type == 'task') $type = '';
 
-	$data = $api->task();
+	// If search is set on task, show only things that match.
+	$data = _search($search);
+
 	foreach ($data as $task) {
-		if($type == 'todo' and (isset($task['completed']) and $task['completed'])) continue; // Don't show the task if already completed.
+		// Don't show the task if already completed.
+		if($task['type'] == 'todo' and (isset($task['completed']) and $task['completed'])) continue; 
 
-		if(!$type) print $task['text'] . "\n";
-		else {
-			if($task['type'] == $type) // Show the task only if the type matches
-				print $task['text'] . "\n";
-		}
+		// Show the task only if the type matches
+		if($type and $task['type'] != $type) continue; 
+		
+		print $task['text'] . "\n";
 	}
+}
 
+function doTask($direction, $task_string) {
+	global $api;
+	$tasks = _search($task_string);
+
+	if(count($tasks) == 1) {
+		$result = $api->doTask($tasks[0]['id'], $direction);
+		dump($result);
+		print "Task '{$tasks[0]['text']}' is done\n";
+
+	} elseif(count($tasks) > 1) {
+		foreach ($tasks as $task) {
+			print $task['text'] . "\n";
+		}
+
+	} else {
+		print "Could not find any tasks matching '$task_string'\n";
+	}
+}
+
+/// Return only the tasks that matches the search string.
+function _search($task_string) {
+	global $api;
+
+	$returns = array();
+	$data = $api->task();
+	if(!$task_string) return $data;
+
+	foreach ($data as $task) {
+		if(stripos($task['text'], $task_string) !== false) 
+			$returns[] = $task;
+	}
+	return $returns;
 }
 
 
