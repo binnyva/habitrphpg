@@ -1,6 +1,8 @@
+#!/usr/bin/php
 <?php
-require('iframe.php');
-require('../HabitRPHPG.php');
+include('iframe.php');
+require(dirname(dirname(__FILE__)).'/HabitRPHPG.php');
+
 // Set the User ID and password. Get this from https://habitrpg.com/#/options/settings/api
 $user_id = '53a24ef5-fe71-4267-9b0b-91e52cadfade';
 $api_key = '26d0cc70-6583-4660-ab91-b7877c73f2c0';
@@ -19,7 +21,7 @@ if(isset($argv[1])) {
 		case 'reward':
 		case 'task':
 			$search = '';
-			if(!empty($argv[2])) $search = $argv[2];
+			if(!empty($argv[2])) $search = implode(" ", array_slice($argv, 2));
 
 			task($argv[1], $search);
 			break;
@@ -34,6 +36,9 @@ if(isset($argv[1])) {
 			if(empty($argv[2])) die("Usage: habitrpg $argv[1] <task string>");
 			$direction = 'up';
 			if($argv[1] == '-' or $argv[1] == 'down') $direction = 'down';
+
+			$task_string = '';
+			if(!empty($argv[2])) $task_string = implode(" ", array_slice($argv, 2));
 
 			doTask($direction, $argv[2]);
 			break;
@@ -54,8 +59,18 @@ function status() {
 	$data = $api->user();
 	$stats = $data['stats'];
 	print $data['profile']['name'] . " (Level $stats[lvl])\n";
-	print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
-	print "Experiance:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
+	info($stats);
+}
+
+function info($stats) {
+	if(isset($stats['maxHealth'])) {
+		print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
+		print "Experiance:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
+	} else {
+		print "Health: " . $stats['hp'];
+		print "Experiance: " . $stats['exp'];
+	}
+
 	list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
 	print "Gold: $gold | Silver: $silver\n";
 }
@@ -74,7 +89,7 @@ function task($type = '', $search = '') {
 		// Show the task only if the type matches
 		if($type and $task['type'] != $type) continue; 
 		
-		print $task['text'] . "\n";
+		showTask($task);
 	}
 }
 
@@ -84,12 +99,12 @@ function doTask($direction, $task_string) {
 
 	if(count($tasks) == 1) {
 		$result = $api->doTask($tasks[0]['id'], $direction);
-		dump($result);
-		print "Task '{$tasks[0]['text']}' is done\n";
+		print "Task '{$tasks[0]['text']}' is done.\n\n";
+		info($result);
 
 	} elseif(count($tasks) > 1) {
 		foreach ($tasks as $task) {
-			print $task['text'] . "\n";
+			showTask($task);
 		}
 
 	} else {
@@ -112,11 +127,14 @@ function _search($task_string) {
 	return $returns;
 }
 
+function showTask($task) {
+	print " + " . $task['text'] . "\n";
+}
 
 
 // Support functions...
 function getFillStatus($current, $full) {
-	$output = "$current/$full  ";
+	$output = "$current/$full\t";
 
 	$percent = intval(($current / $full) * 100);
 	$total_block_count = 20;
