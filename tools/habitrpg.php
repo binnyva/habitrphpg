@@ -43,6 +43,26 @@ if(isset($argv[1])) {
 			doTask($direction, $argv[2]);
 			break;
 
+		case 'help':
+			print <<<END
+Usage: habitrpg [<action> [<data>]]
+
+Commands:
+	habitrpg				Shows the user's status - Name, Level, Health, Experiance, Gold and Silver
+	habitrpg task [<search string>]		Lists all the tasks of the current user
+	habitrpg habit [<search string>] 	Lists all the habits of the current user
+	habitrpg daily [<search string>] 	Lists all the dailies of the current user
+	habitrpg todo [<search string>] 	Lists all the todos of the current user
+	habitrpg reward [<search string>] 	Lists all the rewards of the current user
+	habitrpg + <task keyword>		Mark the task as done. <task keyword> is a string within the task name. If it matches a unique task, that will be marked done. If not, a list of matching tasks are shown.
+	habitrpg - <task keyword>		Mark the task as not done. <task keyword> is same as last command.
+	habitrpg help 				Shows this screen
+
+
+END;
+
+			break;
+
 		default:
 			# code...
 			break;
@@ -67,8 +87,8 @@ function info($stats) {
 		print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
 		print "Experiance:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
 	} else {
-		print "Health: " . $stats['hp'];
-		print "Experiance: " . $stats['exp'];
+		print "Health: " . $stats['hp'] . "\n";
+		print "Experiance: " . $stats['exp'] . "\n";
 	}
 
 	list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
