@@ -1,11 +1,9 @@
 #!/usr/bin/php
 <?php
-include('iframe.php');
 require(dirname(dirname(__FILE__)).'/HabitRPHPG.php');
 
 // Set the User ID and password. Get this from https://habitrpg.com/#/options/settings/api
-$user_id = '53a24ef5-fe71-4267-9b0b-91e52cadfade';
-$api_key = '26d0cc70-6583-4660-ab91-b7877c73f2c0';
+include('config.php');
 
 $api = new HabitRPHPG($user_id, $api_key);
 
@@ -123,6 +121,7 @@ function doTask($direction, $task_string) {
 		info($result);
 
 	} elseif(count($tasks) > 1) {
+		print "Search phrase '$task_string' matches the following tasks...\n";
 		foreach ($tasks as $task) {
 			showTask($task);
 		}
