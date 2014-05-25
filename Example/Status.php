@@ -6,7 +6,7 @@ $data = $api->user();
 $stats = $data['stats'];
 print $data['profile']['name'] . " (Level $stats[lvl])\n";
 print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
-print "Experiance:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
+print "Experience:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
 
 
 function getFillStatus($current, $full) {
