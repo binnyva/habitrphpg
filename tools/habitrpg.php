@@ -46,7 +46,7 @@ if(isset($argv[1])) {
 Usage: habitrpg [<action> [<data>]]
 
 Commands:
-	habitrpg				Shows the user's status - Name, Level, Health, Experiance, Gold and Silver
+	habitrpg				Shows the user's status - Name, Level, Health, Experience, Gold and Silver
 	habitrpg task [<search string>]		Lists all the tasks of the current user
 	habitrpg habit [<search string>] 	Lists all the habits of the current user
 	habitrpg daily [<search string>] 	Lists all the dailies of the current user
@@ -83,10 +83,10 @@ function status() {
 function info($stats) {
 	if(isset($stats['maxHealth'])) {
 		print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
-		print "Experiance:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
+		print "Experience:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
 	} else {
 		print "Health: " . $stats['hp'] . "\n";
-		print "Experiance: " . $stats['exp'] . "\n";
+		print "Experience: " . $stats['exp'] . "\n";
 	}
 
 	list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
