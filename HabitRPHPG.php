@@ -59,6 +59,8 @@ class HabitRPHPG {
 		$response = curl_exec($ch);
 		curl_close($ch);
 
+		file_put_contents("/var/www/Others/Library/HabitRPHPG/dumps/" . str_replace("/", '_', $operation) . "_".rand()."_.json", $response);
+
 		// Save cached version of the file
 		if($this->options['enable_cache']) {
 			file_put_contents($cache_file, $response);
@@ -74,6 +76,23 @@ class HabitRPHPG {
 	function task($task_id = 0) {
 		if($task_id == 0) return $this->_request("get", "user/tasks");
 		else return $this->_request("get", "user/tasks/$task_id");
+	}
+
+	// Returns all the tasks matchnig the task string.
+	function findTask($task_string) {
+		$returns = array();
+		$data = $this->task();
+		if(!$task_string) return $data;
+
+		foreach ($data as $task) {
+			if($task['text'] == $task_string) { // Exact match - must be the task we are looking for.
+				return array($task);
+
+			} else if(stripos($task['text'], $task_string) !== false) {
+				$returns[] = $task;
+			}
+		}
+		return $returns;
 	}
 
 	function createTask($type, $text, $data = array()) {

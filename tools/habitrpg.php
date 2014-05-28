@@ -81,12 +81,13 @@ function status() {
 }
 
 function info($stats) {
+	list($experience,$dec) = explode(".", $stats['exp']);
 	if(isset($stats['maxHealth'])) {
 		print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
-		print "Experience:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
+		print "Experience:\t". getFillStatus($experience, $stats['toNextLevel']) . "\n";
 	} else {
 		print "Health: " . $stats['hp'] . "\n";
-		print "Experience: " . $stats['exp'] . "\n";
+		print "Experience: " . $experience . "\n";
 	}
 
 	list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
@@ -117,7 +118,9 @@ function doTask($direction, $task_string) {
 
 	if(count($tasks) == 1) {
 		$result = $api->doTask($tasks[0]['id'], $direction);
-		print "Task '{$tasks[0]['text']}' is done.\n\n";
+		print "Task '{$tasks[0]['text']}' is done.\n";
+		showDrops($result);
+		print "\n";
 		info($result);
 
 	} elseif(count($tasks) > 1) {
@@ -131,19 +134,17 @@ function doTask($direction, $task_string) {
 	}
 }
 
+function showDrops($result) {
+	if(isset($result['_tmp']['drop'])) {
+		print $result['_tmp']['drop']['dialog'] . "\n";
+	}
+}
+
 /// Return only the tasks that matches the search string.
 function _search($task_string) {
 	global $api;
 
-	$returns = array();
-	$data = $api->task();
-	if(!$task_string) return $data;
-
-	foreach ($data as $task) {
-		if(stripos($task['text'], $task_string) !== false) 
-			$returns[] = $task;
-	}
-	return $returns;
+	return $api->findTask($task_string);
 }
 
 function showTask($task) {
