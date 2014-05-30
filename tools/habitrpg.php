@@ -1,14 +1,20 @@
 #!/usr/bin/php
 <?php
 require(dirname(dirname(__FILE__)).'/HabitRPHPG.php');
+require('iframe.php');
 
 // Set the User ID and password. Get this from https://habitrpg.com/#/options/settings/api
 include('config.php');
+$cache = false;
 
 $api = new HabitRPHPG($user_id, $api_key);
 
 if(isset($argv[1])) {
-	switch ($argv[1]) {
+	
+	$action_index = 1;
+
+	$action = $argv[$action_index];
+	switch ($action) {
 		case 'status':
 			status();
 			break;
@@ -19,9 +25,9 @@ if(isset($argv[1])) {
 		case 'reward':
 		case 'task':
 			$search = '';
-			if(!empty($argv[2])) $search = implode(" ", array_slice($argv, 2));
+			if(!empty($argv[$action_index + 1])) $search = implode(" ", array_slice($argv, $action_index + 1));
 
-			task($argv[1], $search);
+			task($argv[$action_index], $search);
 			break;
 
 		case '+':
@@ -31,14 +37,16 @@ if(isset($argv[1])) {
 		case 'did':
 		case 'up':
 		case 'down':
-			if(empty($argv[2])) die("Usage: habitrpg $argv[1] <task string>");
+			if(empty($argv[$action_index + 1])) die("Usage: habitrpg {$argv[$action_index]} <task string>");
 			$direction = 'up';
-			if($argv[1] == '-' or $argv[1] == 'down') $direction = 'down';
+			if($argv[$action_index] == '-' or $argv[$action_index] == 'down') $direction = 'down';
 
 			$task_string = '';
-			if(!empty($argv[2])) $task_string = implode(" ", array_slice($argv, 2));
+			if(!empty($argv[$action_index + 1])) {
+				$task_string = implode(" ", array_slice($argv, $action_index + 1));	
+			}
 
-			doTask($direction, $argv[2]);
+			doTask($direction, $task_string);
 			break;
 
 		case 'help':
@@ -58,7 +66,6 @@ Commands:
 
 
 END;
-
 			break;
 
 		default:
@@ -81,17 +88,40 @@ function status() {
 }
 
 function info($stats) {
-	list($experience,$dec) = explode(".", $stats['exp']);
-	if(isset($stats['maxHealth'])) {
+	global $api;
+
+	$stats = $api->getStats($stats);
+	if(isset($stats['maxHealth']) and $stats['maxHealth']) {
 		print "Health:\t\t" . getFillStatus($stats['hp'], $stats['maxHealth']) . "\n";
-		print "Experience:\t". getFillStatus($experience, $stats['toNextLevel']) . "\n";
+		print "Experience:\t". getFillStatus($stats['exp'], $stats['toNextLevel']) . "\n";
+		if($stats['lvl'] > 10) print "Mana:\t\t". getFillStatus($stats['mp'], $stats['maxMP']) . "\n";
 	} else {
 		print "Health: " . $stats['hp'] . "\n";
-		print "Experience: " . $experience . "\n";
+		print "Experience: " . $stats['exp'] . "\n";
 	}
 
-	list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
-	print "Gold: $gold | Silver: $silver\n";
+	print "Gold: $stats[gold] | Silver: $stats[silver]\n";
+
+	// Show Delta
+	$status_file = dirname(__FILE__) . '/cache/user_status.json';
+	$old_status = json_decode(file_get_contents($status_file), true);
+
+	if($stats != $old_status) {
+		print "Change: ";
+		foreach($stats as $name => $value) {
+			if($name == 'maxHealth' or $name == 'toNextLevel') continue;
+			if($stats[$name] != $old_status[$name] and ($stats[$name] - $old_status[$name]) > 0) 
+				print ucfirst($name) . ": " . ($stats[$name] - $old_status[$name]) . " | ";
+		}
+		print "\n";
+	}
+
+	file_put_contents($status_file, json_encode($stats));
+
+	global $cache;
+	if($cache) {
+
+	}
 }
 
 function task($type = '', $search = '') {

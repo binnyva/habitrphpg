@@ -95,6 +95,36 @@ class HabitRPHPG {
 		return $returns;
 	}
 
+	function getStats($stats = false) {
+		if(!$stats) {
+			$data = $api->user();
+			$stats = $data['stats'];
+		}
+
+		$stats['hp'] = round($stats['hp'], 1);
+
+		if(strpos($stats['exp'], '.') !== false) list($experience,$dec) = explode(".", $stats['exp']);
+		else $experience = $stats['exp'];
+
+		if(strpos($stats['gp'], '.') !== false)  list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
+		else {
+			$gold = $stats['gp'];
+			$silver = 0;
+		}
+
+		return array(
+			'hp'			=> $stats['hp'],
+			'exp'			=> $experience,
+			'maxHealth'		=> empty($stats['maxHealth']) ? 0 : $stats['maxHealth'],
+			'toNextLevel'	=> empty($stats['toNextLevel']) ? 0 : $stats['toNextLevel'],
+			'gold'			=> $gold,
+			'silver'		=> $silver,
+			'mp'			=> $stats['mp'],
+			'maxMP'			=> empty($stats['maxMP']) ? 0 : $stats['maxMP'],
+			'lvl'			=> empty($stats['lvl']) ? 0 : $stats['lvl']
+		);
+	}
+
 	function createTask($type, $text, $data = array()) {
 		$data['type'] = $type;
 		$data['text'] = $text;
