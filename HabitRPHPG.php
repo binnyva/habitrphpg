@@ -11,7 +11,7 @@ class HabitRPHPG {
 	private $json_return_format_is_array = true;
 	private $options = array(
 				'enable_cache'	=> false,   // FOR DEVELOPMENT ONLY.
-				'cache_path'	=> '/tmp/'	// Use this for faster testing
+				'cache_path'	=> '/tmp/',	// Use this for faster testing
 				'debug'			=> false	// Development only.
 			);
 
@@ -68,7 +68,7 @@ class HabitRPHPG {
 		$response = curl_exec($ch);
 		curl_close($ch);
 
-		if($this->$options['debug']) {
+		if($this->options['debug']) {
 			file_put_contents("/var/www/Others/Library/HabitRPHPG/dumps/" . str_replace("/", '_', $operation) . "_".rand()."_.json", $response);
 		}
 
