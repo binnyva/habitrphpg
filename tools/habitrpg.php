@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 require(dirname(dirname(__FILE__)).'/HabitRPHPG.php');
-require('iframe.php');
+//@include('iframe.php');
 
 // Set the User ID and password. Get this from https://habitrpg.com/#/options/settings/api
 include('config.php');
@@ -49,12 +49,32 @@ if(isset($argv[1])) {
 			doTask($direction, $task_string);
 			break;
 
+		case 'add':
+			if(isset($argv[$action_index + 2])) {
+				$type = $argv[$action_index + 1];
+				$task_name = $argv[$action_index + 2];
+			}
+
+			if(empty($argv[$action_index + 2]) or ($type != 'daily' and $type != 'todo' and $type != 'habit')) {
+				print "Usage: habitrpg add (daily|todo|habit) <Task Name>\n";
+				exit;
+			}
+
+			$data = $api->createTask($type, $task_name);
+			if(isset($data['id'])) {
+				print "Task '$task_name'($type) created.\n";
+			} else {
+				print "Error creating task.\n";
+			}
+			break;
+
 		case 'help':
 			print <<<END
 Usage: habitrpg [<action> [<data>]]
 
 Commands:
 	habitrpg				Shows the user's status - Name, Level, Health, Experience, Gold and Silver
+	habitrpg add (daily|todo|habit) <Task Name>		Add new task of type 'daily/todo/habit' with the text <Task Name>
 	habitrpg task [<search string>]		Lists all the tasks of the current user
 	habitrpg habit [<search string>] 	Lists all the habits of the current user
 	habitrpg daily [<search string>] 	Lists all the dailies of the current user

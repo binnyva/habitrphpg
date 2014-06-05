@@ -11,7 +11,8 @@ class HabitRPHPG {
 	private $json_return_format_is_array = true;
 	private $options = array(
 				'enable_cache'	=> false,   // FOR DEVELOPMENT ONLY.
-				'cache_path'	=> '/tmp/' // Use this for faster testing
+				'cache_path'	=> '/tmp/'	// Use this for faster testing
+				'debug'			=> false	// Development only.
 			);
 
 	///Constructor
@@ -29,6 +30,14 @@ class HabitRPHPG {
 		$url_parts = parse_url($url);
 		$ch = curl_init($url_parts['host']);
 
+		$data_sting = '';
+		if(is_array($data)) {
+			foreach($data as $key=>$value) { $data_sting .= $key.'='.$value.'&'; }
+			rtrim($data_sting, '&');
+		} else {
+			$data_sting = $data;
+		}
+
 		// If cacheing is on and we have a cached copy of the request, use that.
 		if($this->options['enable_cache']) {
 			$cache_file = $this->options['cache_path'] . md5($url) . ".json";
@@ -43,7 +52,7 @@ class HabitRPHPG {
 
 		if($method == 'post') {
 			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_sting);
 		} else {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 		}
@@ -59,7 +68,9 @@ class HabitRPHPG {
 		$response = curl_exec($ch);
 		curl_close($ch);
 
-		file_put_contents("/var/www/Others/Library/HabitRPHPG/dumps/" . str_replace("/", '_', $operation) . "_".rand()."_.json", $response);
+		if($this->$options['debug']) {
+			file_put_contents("/var/www/Others/Library/HabitRPHPG/dumps/" . str_replace("/", '_', $operation) . "_".rand()."_.json", $response);
+		}
 
 		// Save cached version of the file
 		if($this->options['enable_cache']) {
@@ -132,7 +143,7 @@ class HabitRPHPG {
 		if(!isset($data['value'])) $data['value'] = 0;
 		if(!isset($data['notes'])) $data['notes'] = "";
 
-		return $this->_request("post", "user/task/", $data);
+		return $this->_request("post", "user/tasks", $data);
 	}
 
 	function updateTask($task_id, $data) {
