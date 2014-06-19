@@ -14,11 +14,21 @@ class HabitRPHPG {
 				'cache_path'	=> '/tmp/',	// Use this for faster testing
 				'debug'			=> false	// Development only.
 			);
+	private $pet_types = array('Wolf', 'TigerCub', 'PandaCub','LionCub','Fox','FlyingPig','Dragon','Cactus','BearCub');
+	private $hatch_types = array('Base','White','Desert','Red','Shade','Skeleton','Zombie','CottonCandyPink','CottonCandyBlue','Golden');
+	private $food_types = array('Meat','Milk','Potatoe','Strawberry','Chocolate','Fish','RottenMeat','CottonCandyPink','CottonCandyBlue','Cake_Skeleton','Cake_Base','Honey','Saddle');
+	private $pet_combinations = array();
 
 	///Constructor
 	function __construct($user_id, $api_key) {
 		$this->user_id = $user_id;
 		$this->api_key = $api_key;
+
+		foreach ($this->pet_types as $pet) {
+			foreach ($this->hatch_types as $type) {
+				$this->pet_combinations[] = $pet . "-" . $type;
+			}
+		}
 	}
 
 	private function _request($method, $operation, $data = '') {
@@ -99,7 +109,7 @@ class HabitRPHPG {
 			if($task['text'] == $task_string) { // Exact match - must be the task we are looking for.
 				return array($task);
 
-			} else if(stripos($task['text'], $task_string) !== false) {
+			} else if(stripos($task['text'], $task_string) !== false and (!isset($task['completed']) or $task['completed'] == false)) {
 				$returns[] = $task;
 			}
 		}
@@ -158,5 +168,21 @@ class HabitRPHPG {
 		return $this->_request("post", "user/tasks/$task_id/$direction", array('apiToken'=>$this->api_key));
 	}
 
+	/**
+	 * Arguments:	$food - The food item that should be fed. You must have this.
+	 *				$pet - Pet indentifier. Will be something like 'Fox-Desert'. You have to have this
+	 *				$show_error - Prints an error if you enter an invalid food or pet type.
+	 */
+	function feed($food, $pet, $show_error = true) {
+		if(!in_array($food, $this->food_types)) {
+			if($show_error) print "'$food' is not a valid food type.";
+			return false;
+		}
+		if(!in_array($pet, $this->pet_combinations)) {
+			if($show_error) print "'$pet' is not a valid pet type.";
+			return false;
+		}
 
+		return $this->_request("post", "user/inventory/feed/$pet/$food");
+	}
 }

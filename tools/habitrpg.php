@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 require(dirname(dirname(__FILE__)).'/HabitRPHPG.php');
-//@include('iframe.php');
+@include('iframe.php');
 
 // Set the User ID and password. Get this from https://habitrpg.com/#/options/settings/api
 include('config.php');
@@ -9,16 +9,34 @@ $cache = false;
 
 $api = new HabitRPHPG($user_id, $api_key);
 
-if(isset($argv[1])) {
-	
+if(isset($argv[1])) {	
 	$action_index = 1;
-
 	$action = $argv[$action_index];
+
 	switch ($action) {
 		case 'status':
 			status();
 			break;
-		
+
+		case 'inventory':
+		case 'inv':
+			inventory();
+			break;
+
+		case 'pets':
+			showPets();
+			break;
+
+		case 'feed':
+			if(!isset($argv[$action_index+2])) {
+				print "Useage: habitrpg feed <food> <pet>\n";
+				exit;
+			}
+			$food = $argv[$action_index + 1];
+			$pet  = $argv[$action_index + 2];
+			feed($food, $pet);
+			break;
+
 		case 'habit':
 		case 'daily':
 		case 'todo':
@@ -82,6 +100,7 @@ Commands:
 	habitrpg reward [<search string>] 	Lists all the rewards of the current user
 	habitrpg + <task keyword>		Mark the task as done. <task keyword> is a string within the task name. If it matches a unique task, that will be marked done. If not, a list of matching tasks are shown.
 	habitrpg - <task keyword>		Mark the task as not done. <task keyword> is same as last command.
+	habitrpg inventory			Show the inventory of the current user - Eggs, Hatching Potions, Food and Quests
 	habitrpg help 				Shows this screen
 
 
@@ -97,7 +116,6 @@ END;
 	status();
 }
 
-
 function status() {
 	global $api;
 
@@ -105,6 +123,52 @@ function status() {
 	$stats = $data['stats'];
 	print $data['profile']['name'] . " (Level $stats[lvl])\n";
 	info($stats);
+}
+
+function inventory() {
+	global $api;
+
+	$data = $api->user();
+	showItems("eggs", $data['items']);
+	showItems("hatchingPotions", $data['items']);
+	showItems("food", $data['items']);
+	showItems("quests", $data['items']);
+}
+
+function showItems($type, $items) {
+	$all_items = $items[$type];
+	$have_items = array();
+	foreach ($all_items as $key => $value) {
+		if($value)
+			$have_items[$key] = $value;
+	}
+
+	if($have_items) {
+		print " + " . formatKey($type) . "\n";
+
+		foreach ($have_items as $key => $value) {
+			print "\t" . formatKey($key) . "($value)\n";
+		}
+	}
+}
+
+function feed($food, $pet) {
+	global $api;
+	$api->feed($food, $pet);
+
+	print "Pet fed\n";
+}
+
+function showPets() {
+	global $api;
+
+	$data = $api->user();
+	$pets = $data['items']['pets'];
+	foreach ($pets as $key => $value) {
+		// Anything with value over 50 is a mount. // :TODO Show a percentage thingy.
+		print formatKey($key) . "($value), ";
+	}
+	print "\n";
 }
 
 function info($stats) {
@@ -217,4 +281,7 @@ function getFillStatus($current, $full) {
 	return $output;
 }
 
-
+function formatKey($text) {
+	//return format($text);
+	return $text;
+}
