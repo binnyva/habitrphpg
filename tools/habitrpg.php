@@ -168,19 +168,21 @@ function showItems($type, $items) {
 
 function feed($food, $pet) {
 	global $api;
-	$api->feed($food, $pet);
+	$result = $api->feed($food, $pet);
 
-	print "Pet fed\n";
+	if($result !== false) print "Pet fed\n";
 }
 
 function hatch($egg, $hatching_portion) {
 	global $api;
 	$result = $api->hatch($egg, $hatching_portion);
 
-	if(isset($result['pets']["$hatchingPotions-$egg"])) {
+	if(isset($result['pets'][$egg.'-'.$hatching_portion])) {
 		print "Egg hatched.\n";
 	} else {
-		print "Egg could not be hatched.\n";
+		print "Egg could not be hatched. ";
+		if(!empty($result['err'])) echo $result['err'];
+		print "\n";
 	}
 }
 

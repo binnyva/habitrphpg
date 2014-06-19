@@ -26,7 +26,7 @@ class HabitRPHPG {
 		$this->user_id = $user_id;
 		$this->api_key = $api_key;
 
-		foreach ($this->pet_types as $pet) {
+		foreach ($this->egg_types as $pet) {
 			foreach ($this->hatch_types as $type) {
 				$this->pet_types[] = $pet . "-" . $type;
 			}
