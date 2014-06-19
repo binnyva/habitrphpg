@@ -14,10 +14,12 @@ class HabitRPHPG {
 				'cache_path'	=> '/tmp/',	// Use this for faster testing
 				'debug'			=> false	// Development only.
 			);
-	private $pet_types = array('Wolf', 'TigerCub', 'PandaCub','LionCub','Fox','FlyingPig','Dragon','Cactus','BearCub');
+	private $egg_types = array('Wolf', 'TigerCub', 'PandaCub','LionCub','Fox','FlyingPig','Dragon','Cactus','BearCub', 	// Standard
+			'Egg','Gryphon'		// Extras.
+		);
 	private $hatch_types = array('Base','White','Desert','Red','Shade','Skeleton','Zombie','CottonCandyPink','CottonCandyBlue','Golden');
 	private $food_types = array('Meat','Milk','Potatoe','Strawberry','Chocolate','Fish','RottenMeat','CottonCandyPink','CottonCandyBlue','Cake_Skeleton','Cake_Base','Honey','Saddle');
-	private $pet_combinations = array();
+	private $pet_types = array();
 
 	///Constructor
 	function __construct($user_id, $api_key) {
@@ -26,7 +28,7 @@ class HabitRPHPG {
 
 		foreach ($this->pet_types as $pet) {
 			foreach ($this->hatch_types as $type) {
-				$this->pet_combinations[] = $pet . "-" . $type;
+				$this->pet_types[] = $pet . "-" . $type;
 			}
 		}
 	}
@@ -178,11 +180,29 @@ class HabitRPHPG {
 			if($show_error) print "'$food' is not a valid food type.";
 			return false;
 		}
-		if(!in_array($pet, $this->pet_combinations)) {
+		if(!in_array($pet, $this->pet_types)) {
 			if($show_error) print "'$pet' is not a valid pet type.";
 			return false;
 		}
 
 		return $this->_request("post", "user/inventory/feed/$pet/$food");
+	}
+
+	/**
+	 * Arguments:	$egg - The eggo that should be made preggo. You must have this.
+	 *				$hatching_portion - Hatching portion to be used on the egg. Must have this.
+	 *				$show_error - Prints an error if you enter an invalid food or pet type.
+	 */
+	function hatch($egg, $hatching_portion, $show_error = true) {
+		if(!in_array($egg, $this->egg_types)) {
+			if($show_error) print "'$egg' is not a valid egg type.";
+			return false;
+		}
+		if(!in_array($hatching_portion, $this->hatch_types)) {
+			if($show_error) print "'$hatching_portion' is not a valid hatching portion.";
+			return false;
+		}
+
+		return $this->_request("post", "user/inventory/hatch/$egg/$hatching_portion");
 	}
 }

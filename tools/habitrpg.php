@@ -37,6 +37,17 @@ if(isset($argv[1])) {
 			feed($food, $pet);
 			break;
 
+		case 'hatch':
+			if(!isset($argv[$action_index+2])) {
+				print "Useage: habitrpg hatch <egg> <hatching potion>\n";
+				exit;
+			}
+			$egg = $argv[$action_index + 1];
+			$hatching_portion  = $argv[$action_index + 2];
+			hatch($egg, $hatching_portion);
+			break;
+
+
 		case 'habit':
 		case 'daily':
 		case 'todo':
@@ -92,7 +103,7 @@ Usage: habitrpg [<action> [<data>]]
 
 Commands:
 	habitrpg				Shows the user's status - Name, Level, Health, Experience, Gold and Silver
-	habitrpg add (daily|todo|habit) <Task Name>		Add new task of type 'daily/todo/habit' with the text <Task Name>
+	habitrpg add (daily|todo|habit) <Task>	Add new task of type 'daily/todo/habit' with the text <Task Name>
 	habitrpg task [<search string>]		Lists all the tasks of the current user
 	habitrpg habit [<search string>] 	Lists all the habits of the current user
 	habitrpg daily [<search string>] 	Lists all the dailies of the current user
@@ -101,6 +112,9 @@ Commands:
 	habitrpg + <task keyword>		Mark the task as done. <task keyword> is a string within the task name. If it matches a unique task, that will be marked done. If not, a list of matching tasks are shown.
 	habitrpg - <task keyword>		Mark the task as not done. <task keyword> is same as last command.
 	habitrpg inventory			Show the inventory of the current user - Eggs, Hatching Potions, Food and Quests
+	habitrpg pets				Show all the pets that the current user has.
+	habitrpg feed <food> <pet>		Feed the <food> to the <pet>. You should have both available for this action.
+	habitrpg hatch <egg> <hatching_portion>	Hatch the <egg> using the <hatching_portion>. Both must be available.
 	habitrpg help 				Shows this screen
 
 
@@ -158,6 +172,18 @@ function feed($food, $pet) {
 
 	print "Pet fed\n";
 }
+
+function hatch($egg, $hatching_portion) {
+	global $api;
+	$result = $api->hatch($egg, $hatching_portion);
+
+	if(isset($result['pets']["$hatchingPotions-$egg"])) {
+		print "Egg hatched.\n";
+	} else {
+		print "Egg could not be hatched.\n";
+	}
+}
+
 
 function showPets() {
 	global $api;
