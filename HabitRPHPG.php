@@ -12,7 +12,7 @@ class HabitRPHPG {
 	private $options = array(
 				'enable_cache'	=> false,   // FOR DEVELOPMENT ONLY.
 				'cache_path'	=> '/tmp/',	// Use this for faster testing
-				'debug'			=> false	// Development only.
+				'debug'			=> false,	// Development only.
 			);
 	private $egg_types = array('Wolf', 'TigerCub', 'PandaCub','LionCub','Fox','FlyingPig','Dragon','Cactus','BearCub', 	// Standard
 			'Egg','Gryphon'		// Extras.
