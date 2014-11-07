@@ -23,7 +23,9 @@ if(isset($argv[1])) {
 			inventory();
 			break;
 
+		case 'pet':
 		case 'pets':
+			// :TODO: Sort by health, show only type given as argument
 			showPets();
 			break;
 
@@ -98,7 +100,20 @@ if(isset($argv[1])) {
 			break;
 
 		case 'help':
-			print <<<END
+			help();
+			break;
+
+		default:
+			print "Invalid argument...\n";
+			help();
+			break;
+	}
+} else {
+	status();
+}
+
+function help() {
+	print <<<END
 Usage: habitrpg [<action> [<data>]]
 
 Commands:
@@ -119,21 +134,15 @@ Commands:
 
 
 END;
-			break;
 
-		default:
-			# code...
-			break;
-	}
-} else {
-
-	status();
 }
 
 function status() {
 	global $api;
 
 	$data = $api->user();
+	if(!$data) die("Cannot fetch data\n");
+
 	$stats = $data['stats'];
 	print $data['profile']['name'] . " (Level $stats[lvl])\n";
 	info($stats);

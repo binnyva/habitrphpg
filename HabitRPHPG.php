@@ -12,7 +12,7 @@ class HabitRPHPG {
 	private $options = array(
 				'enable_cache'	=> false,   // FOR DEVELOPMENT ONLY.
 				'cache_path'	=> '/tmp/',	// Use this for faster testing
-				'debug'			=> false	// Development only.
+				'debug'			=> false,	// Development only.
 			);
 	private $egg_types = array('Wolf', 'TigerCub', 'PandaCub','LionCub','Fox','FlyingPig','Dragon','Cactus','BearCub', 	// Standard
 			'Egg','Gryphon'		// Extras.
@@ -59,19 +59,17 @@ class HabitRPHPG {
 		}
 		curl_setopt($ch, CURLOPT_URL, $url) or die("Invalid cURL Handle Resouce");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); //Just return the data - not print the whole thing.
-		// curl_setopt($ch, CURLOPT_HEADER, true); //We need the headers
+		//curl_setopt($ch, CURLOPT_HEADER, true); //We need the headers
 		if(isset($options['encoding'])) curl_setopt($ch, CURLOPT_ENCODING, "application/json");
 
 		if($method == 'post') {
 			curl_setopt($ch, CURLOPT_POST, true);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_sting);
-		} else {
-			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 		}
 
 		$custom_headers = array(
-			"x-api-user: $this->user_id",
-            "x-api-key: $this->api_key",
+			"x-api-user: {$this->user_id}",
+            "x-api-key: {$this->api_key}",
 		);
 
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $custom_headers);
@@ -120,7 +118,7 @@ class HabitRPHPG {
 
 	function getStats($stats = false) {
 		if(!$stats) {
-			$data = $api->user();
+			$data = $this->user();
 			$stats = $data['stats'];
 		}
 
