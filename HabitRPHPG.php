@@ -75,7 +75,11 @@ class HabitRPHPG {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $custom_headers);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // ignores certificate error
+
 		$response = curl_exec($ch);
+		// output error message if an error is occured
+		if($response === false) die(curl_error($ch)); // more verbose output
 		curl_close($ch);
 
 		if($this->options['debug']) {
