@@ -1,6 +1,6 @@
 # HabitRPHPG
  
-## Version: 0.00.A
+## Version: 1.01.A
 
 HabitRPG PHP library.
 

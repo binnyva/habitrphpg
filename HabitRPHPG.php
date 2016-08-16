@@ -94,8 +94,6 @@ class HabitRPHPG {
 		$return = json_decode($response, $this->json_return_format_is_array);
 		$tasks = $return;
 
-		file_put_contents('/home/binnyva/Test.json', $response);
-
 		if($this->json_return_format_is_array) {
 			if($return['success']) {
 				if(isset($return['data'])) $tasks = $return['data'];
