@@ -55,6 +55,7 @@ if(isset($argv[1])) {
 		case 'todo':
 		case 'reward':
 		case 'task':
+		case 'done':
 			$search = '';
 			if(!empty($argv[$action_index + 1])) $search = implode(" ", array_slice($argv, $action_index + 1));
 
@@ -64,7 +65,6 @@ if(isset($argv[1])) {
 		case '+':
 		case '-':
 		case 'do':
-		case 'done':
 		case 'did':
 		case 'up':
 		case 'down':
@@ -123,6 +123,7 @@ Commands:
 	habitrpg habit [<search string>] 	Lists all the habits of the current user
 	habitrpg daily [<search string>] 	Lists all the dailies of the current user
 	habitrpg todo [<search string>] 	Lists all the todos of the current user
+	habitrpg done [<search string>] 	Lists all the completed todos that haven't ben archived yet.
 	habitrpg reward [<search string>] 	Lists all the rewards of the current user
 	habitrpg + <task keyword>		Mark the task as done. <task keyword> is a string within the task name. If it matches a unique task, that will be marked done. If not, a list of matching tasks are shown.
 	habitrpg - <task keyword>		Mark the task as not done. <task keyword> is same as last command.
@@ -253,6 +254,12 @@ function task($type = '', $search = '') {
 	$data = _search($search);
 
 	foreach ($data as $task) {
+		// Show only done tasks.
+		if($type == 'done' and $task['type'] == 'todo' and (isset($task['completed']) and $task['completed'])) {
+			showTask($task);
+			continue;
+		}
+
 		// Don't show the task if already completed.
 		if($task['type'] == 'todo' and (isset($task['completed']) and $task['completed'])) continue; 
 

@@ -7,7 +7,7 @@
 class HabitRPHPG {
 	private $user_id = '';
 	private $api_key = '';
-	private $base_url = 'https://habitrpg.com/';
+	private $base_url = 'https://habitica.com/';
 	private $json_return_format_is_array = true;
 	private $options = array(
 				'enable_cache'	=> false,   // FOR DEVELOPMENT ONLY.
@@ -36,7 +36,7 @@ class HabitRPHPG {
 	private function _request($method, $operation, $data = '') {
 		if(!function_exists("curl_init")) die("HabitRPG Library requires curl to function.");
 
-		$url = $this->base_url . 'api/v2/' . $operation;
+		$url = $this->base_url . 'api/v3/' . $operation;
 		if($method == 'get') $url .= '/' . $data;
 
 		$url_parts = parse_url($url);
@@ -91,7 +91,21 @@ class HabitRPHPG {
 			file_put_contents($cache_file, $response);
 		}
 
-		return json_decode($response, $this->json_return_format_is_array);
+		$return = json_decode($response, $this->json_return_format_is_array);
+		$tasks = $return;
+
+		file_put_contents('/home/binnyva/Test.json', $response);
+
+		if($this->json_return_format_is_array) {
+			if($return['success']) {
+				if(isset($return['data'])) $tasks = $return['data'];
+			}
+			else return false;
+		} else {
+			die("Make sure HabitRPHPG::json_return_format_is_array is true for this to work");
+		}
+
+		return $tasks;
 	}
 
 	function user() {
@@ -99,8 +113,8 @@ class HabitRPHPG {
 	}
 
 	function task($task_id = 0) {
-		if($task_id == 0) return $this->_request("get", "user/tasks");
-		else return $this->_request("get", "user/tasks/$task_id");
+		if($task_id == 0) return $this->_request("get", "tasks/user");
+		else return $this->_request("get", "tasks/user/$task_id");
 	}
 
 	// Returns all the tasks matchnig the task string.
@@ -131,7 +145,10 @@ class HabitRPHPG {
 		if(strpos($stats['exp'], '.') !== false) list($experience,$dec) = explode(".", $stats['exp']);
 		else $experience = $stats['exp'];
 
-		if(strpos($stats['gp'], '.') !== false)  list($gold,$silver) = explode(".", substr($stats['gp'],0,5));
+		if(strpos($stats['gp'], '.') !== false) {
+			list($gold,$silver) = explode(".", $stats['gp']);
+			$silver = substr($silver, 0, 2);
+		}
 		else {
 			$gold = $stats['gp'];
 			$silver = 0;
@@ -157,11 +174,11 @@ class HabitRPHPG {
 		if(!isset($data['value'])) $data['value'] = 0;
 		if(!isset($data['notes'])) $data['notes'] = "";
 
-		return $this->_request("post", "user/tasks", $data);
+		return $this->_request("post", "tasks/user", $data);
 	}
 
 	function updateTask($task_id, $data) {
-		return $this->_request("put", "user/task/$task_id", $data);	
+		return $this->_request("put", "tasks/$task_id", $data);	
 	}
 
 	/**
@@ -169,7 +186,7 @@ class HabitRPHPG {
 	 *				$direction - should be 'up' or 'down'
 	 */
 	function doTask($task_id, $direction) {
-		return $this->_request("post", "user/tasks/$task_id/$direction", array('apiToken'=>$this->api_key));
+		return $this->_request("post", "tasks/user/$task_id/$direction", array('apiToken'=>$this->api_key));
 	}
 
 	/**
@@ -187,7 +204,7 @@ class HabitRPHPG {
 			return false;
 		}
 
-		return $this->_request("post", "user/inventory/feed/$pet/$food");
+		return $this->_request("post", "user/feed/$pet/$food");
 	}
 
 	/**
@@ -205,6 +222,6 @@ class HabitRPHPG {
 			return false;
 		}
 
-		return $this->_request("post", "user/inventory/hatch/$egg/$hatching_portion");
+		return $this->_request("post", "user/hatch/$egg/$hatching_portion");
 	}
 }
