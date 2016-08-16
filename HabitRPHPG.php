@@ -37,7 +37,7 @@ class HabitRPHPG {
 		if(!function_exists("curl_init")) die("HabitRPG Library requires curl to function.");
 
 		$url = $this->base_url . 'api/v3/' . $operation;
-		if($method == 'get') $url .= '/' . $data;
+		if($method == 'get' and $data) $url .= '/' . $data;
 
 		$url_parts = parse_url($url);
 		$ch = curl_init($url_parts['host']);
@@ -110,15 +110,20 @@ class HabitRPHPG {
 		return $this->_request("get", "user");
 	}
 
-	function task($task_id = 0) {
-		if($task_id == 0) return $this->_request("get", "tasks/user");
-		else return $this->_request("get", "tasks/user/$task_id");
+	function task($task_id = 0, $type = '') {
+		$query = '';
+		if($type) $query = "?type=$type";
+
+		if($task_id == 0) $return = $this->_request("get", "tasks/user" . $query);
+		else $return = $this->_request("get", "tasks/user/$task_id");
+
+		return $return;
 	}
 
 	// Returns all the tasks matchnig the task string.
-	function findTask($task_string) {
+	function findTask($task_string, $type = '') {
 		$returns = array();
-		$data = $this->task();
+		$data = $this->task(0, $type);
 		if(!$task_string) return $data;
 
 		foreach ($data as $task) {
@@ -184,7 +189,7 @@ class HabitRPHPG {
 	 *				$direction - should be 'up' or 'down'
 	 */
 	function doTask($task_id, $direction) {
-		return $this->_request("post", "tasks/user/$task_id/$direction", array('apiToken'=>$this->api_key));
+		return $this->_request("post", "tasks/$task_id/score/$direction", array('apiToken'=>$this->api_key));
 	}
 
 	/**

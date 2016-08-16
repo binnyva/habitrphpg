@@ -312,7 +312,9 @@ function showTask($task) {
 
 // Support functions...
 function getFillStatus($current, $full) {
-	$output = "$current/$full\t";
+	$output = "$current/$full\t\t";
+
+	if(strlen($output) >= 10) $output = substr($output, 0, -1); // For better formatting of the blocks
 
 	$percent = intval(($current / $full) * 100);
 	$total_block_count = 20;
